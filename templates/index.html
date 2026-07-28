@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VisionCrafter AI — Text to Image</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- ============ LANDING (full width, no sidebar) ============ -->
+<section class="landing-screen" id="landingScreen">
+  <div class="landing">
+    <div class="landing__badge">✨ Powered by Advanced Diffusion Models</div>
+    <h1 class="landing__title">VisionCrafter<span class="landing__title-accent">AI</span></h1>
+    <p class="landing__sub">
+      VisionCrafter AI transforms your imagination into stunning AI-generated artwork using advanced
+      diffusion models. Simply describe your vision, choose your preferred style, and let AI create
+      breathtaking, high-quality images in seconds.
+    </p>
+    <button class="btn btn--gradient btn--get-started" id="getStartedBtn" type="button">🪄 Get Started</button>
+
+    <div class="landing__previews" id="landingPreviews">
+      <img class="landing__preview-tile" src="https://picsum.photos/seed/visioncrafter1/200/200" alt="Sample AI-generated artwork">
+      <img class="landing__preview-tile" src="https://picsum.photos/seed/visioncrafter2/200/200" alt="Sample AI-generated artwork">
+      <img class="landing__preview-tile" src="https://picsum.photos/seed/visioncrafter3/200/200" alt="Sample AI-generated artwork">
+    </div>
+
+    <div class="landing__rating">
+      <span class="landing__stars">★★★★★</span>
+      <span>4.9 / 5</span>
+      <span class="landing__dot">·</span>
+      <span id="landingImageCount">50K+ images generated</span>
+      <span class="landing__dot">·</span>
+      <span>Free to start</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP SHELL (sidebar + main, hidden until Get Started) ============ -->
+<div class="app-shell" id="appShell" hidden>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar expanded">
+    <div class="sidebar__brand">
+      <span class="brand-mark">✎</span>
+      <span class="brand-name">VisionCrafter<br><span class="brand-name__accent">AI</span></span>
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Sections">
+      <button class="nav-item" data-view="dashboard" type="button"><span class="nav-item__icon">▦</span> Dashboard</button>
+      <button class="nav-item active" data-view="studio" type="button"><span class="nav-item__icon">🖼️</span> Text to Image</button>
+      <button class="nav-item" data-view="img2img" type="button"><span class="nav-item__icon">🖇️</span> Image to Image</button>
+      <button class="nav-item" data-jump="negativePromptField" type="button"><span class="nav-item__icon">⊘</span> Negative Prompt</button>
+      <button class="nav-item" data-jump="artStyleSection" type="button"><span class="nav-item__icon">🎨</span> Art Styles</button>
+      <button class="nav-item" data-view="history" type="button"><span class="nav-item__icon">🕘</span> Prompt History</button>
+      <button class="nav-item" data-view="favorites" type="button"><span class="nav-item__icon">♡</span> Favorites</button>
+      <button class="nav-item" data-view="gallery" type="button"><span class="nav-item__icon">▤</span> AI Gallery</button>
+      <button class="nav-item" data-view="downloads" type="button"><span class="nav-item__icon">⤓</span> Downloads</button>
+      <div class="sidebar__divider"></div>
+      <button class="nav-item" data-view="settings" type="button"><span class="nav-item__icon">⚙</span> Settings</button>
+      <button class="nav-item" data-view="help" type="button"><span class="nav-item__icon">?</span> Help &amp; Docs</button>
+    </nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main center-layout">
+
+    <!-- ---------- STUDIO VIEW ---------- -->
+    <section class="view" id="view-studio">
+      <header class="page-header">
+        <div>
+          <h2 class="page-header__title">Create Your AI Artwork</h2>
+          <p class="page-header__sub">Describe your vision and let AI bring it to life</p>
+        </div>
+        <span class="plan-badge">✨ All Features Free</span>
+        
+      </header>
+
+      <div class="prompt-card glass content-width">
+        <div class="control-group">
+          <label for="prompt">Prompt</label>
+          <textarea id="prompt" rows="4" placeholder="Describe the image you want to generate…"></textarea>
+          <button class="link-btn" id="randomPromptBtn" type="button">🎲 Surprise me</button>
+        </div>
+        <div class="control-group" id="negativePromptField">
+          <label for="negativePrompt">Negative Prompt <span class="muted">(what to avoid)</span></label>
+          <textarea id="negativePrompt" rows="2" placeholder="blurry, low quality, distorted, watermark…">{{ default_negative_prompt }}</textarea>
+        </div>
+      </div>
+
+      <div class="params-card glass content-width">
+        <div class="params-grid">
+          <div class="param-block">
+            <label>Image Size</label>
+            <div class="toggle-group" id="sizeToggle">
+              {% for s in size_presets %}
+              <button type="button" class="toggle-btn {{ 'active' if loop.first else '' }}" data-value="{{ s }}">{{ s }}</button>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="param-block">
+            <label>CFG Scale <span class="param-value mono" id="cfgVal">7</span></label>
+            <input type="range" id="cfgScale" min="1" max="20" step="0.5" value="7">
+          </div>
+          <div class="param-block">
+            <label>Steps <span class="param-value mono" id="stepsVal">30</span></label>
+            <input type="range" id="steps" min="4" max="50" step="2" value="30">
+          </div>
+          <div class="param-block">
+            <label for="seed">Seed <span class="muted">(optional)</span></label>
+            <input type="text" id="seed" placeholder="Random">
+          </div>
+          <div class="param-block">
+            <label>Images: <span class="param-value mono" id="numImagesVal">1</span></label>
+            <div class="toggle-group" id="numImagesToggle">
+              <button type="button" class="toggle-btn active" data-value="1">1</button>
+              <button type="button" class="toggle-btn" data-value="2">2</button>
+              <button type="button" class="toggle-btn" data-value="4">4</button>
+            </div>
+          </div>
+          <div class="param-block">
+            <label>Quality</label>
+            <div class="toggle-group" id="qualityToggle">
+              {% for q in quality_presets %}
+              <button type="button" class="toggle-btn {{ 'active' if q == 'standard' else '' }}" data-value="{{ q }}">{{ q.title() }}</button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="style-card glass content-width" id="artStyleSection">
+        <div class="style-card__header">
+          <label>Art Style</label>
+          <span class="muted mono" id="styleSelectedLabel">Realistic selected</span>
+        </div>
+        <div class="style-grid" id="styleGrid">
+          {% for s in style_presets %}
+          <button type="button" class="style-tile {{ 'active' if loop.first else '' }}" data-value="{{ s }}">
+            <span class="style-tile__icon" style="background:{{ style_icons[s].color }}22; color:{{ style_icons[s].color }};">{{ style_icons[s].icon }}</span>
+            <span class="style-tile__label">{{ s.replace('_', ' ').title() }}</span>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button class="btn btn--gradient btn--generate content-width" id="generateBtn" type="button">✨ <span>Generate Image</span></button>
+      <p class="error-msg" id="errorMsg" hidden></p>
+
+      <div class="prompt-flow glass content-width" id="promptFlow" hidden>
+        <div class="prompt-flow__step">
+          <span class="prompt-flow__label">Original</span>
+          <p class="mono" id="flowOriginal"></p>
+        </div>
+        <div class="prompt-flow__arrow">↓ enhanced</div>
+        <div class="prompt-flow__step">
+          <span class="prompt-flow__label">Sent to the model</span>
+          <p class="mono" id="flowEnhanced"></p>
+        </div>
+      </div>
+
+      <div class="denoiser glass content-width" id="denoiser" hidden>
+        <canvas id="denoiserCanvas" width="480" height="480"></canvas>
+        <div class="denoiser__progress-track"><div class="denoiser__progress-fill" id="denoiserProgressFill"></div></div>
+        <p class="denoiser__status mono" id="denoiserStatus">initializing sampler…</p>
+      </div>
+
+      <div class="studio-results" id="studioResults"></div>
+
+      <div class="empty-canvas content-width" id="emptyCanvas">
+        <div class="empty-canvas__icon">🖼️</div>
+        <p class="empty-canvas__title">Your artwork will appear here</p>
+        <p class="empty-canvas__sub">Enter a prompt above and hit Generate Image</p>
+      </div>
+    </section>
+
+    <!-- ---------- DASHBOARD (stats) VIEW ---------- -->
+    <section class="view" id="view-dashboard" hidden>
+      <header class="page-header"><div><h2 class="page-header__title">Dashboard</h2><p class="page-header__sub">A quick read on your generation activity this session.</p></div></header>
+      <div class="stats-grid">
+        <div class="stat-card glass"><p class="stat-card__label">Total images generated</p><p class="stat-card__value" id="statTotalImages">0</p></div>
+        <div class="stat-card glass"><p class="stat-card__label">Total generations run</p><p class="stat-card__value" id="statTotalBatches">0</p></div>
+        <div class="stat-card glass"><p class="stat-card__label">Most used style</p><p class="stat-card__value" id="statMostUsedStyle">—</p></div>
+        <div class="stat-card glass"><p class="stat-card__label">Avg. inference time</p><p class="stat-card__value" id="statAvgTime">—</p></div>
+        <div class="stat-card glass"><p class="stat-card__label">Images generated today</p><p class="stat-card__value" id="statToday">0</p></div>
+        <div class="stat-card glass"><p class="stat-card__label">Favorites saved</p><p class="stat-card__value" id="statFavorites">0</p></div>
+        <div class="stat-card glass"><p class="stat-card__label">Estimated storage used</p><p class="stat-card__value" id="statStorage">0 MB</p></div>
+        <div class="stat-card glass"><p class="stat-card__label">Model in use</p><p class="stat-card__value stat-card__value--mono">{{ model_id }}</p></div>
+      </div>
+      <p class="muted" style="font-size:0.8rem;">Storage is an estimate based on image dimensions, not exact file size on disk.</p>
+    </section>
+
+    <!-- ---------- IMAGE TO IMAGE (stub) ---------- -->
+    <section class="view" id="view-img2img" hidden>
+      <header class="page-header"><div><h2 class="page-header__title">Image to Image</h2><p class="page-header__sub">Upload a reference image and generate variations from it.</p></div></header>
+      <div class="stub-panel glass"><p>Image-to-image generation is coming in a future update — for now, use <strong>Text to Image</strong> and the ↻ Regenerate action on any result to explore variations.</p></div>
+    </section>
+
+    <!-- ---------- GALLERY VIEW ---------- -->
+    <section class="view" id="view-gallery" hidden>
+      <header class="page-header"><div><h2 class="page-header__title">AI Gallery</h2><p class="page-header__sub">Every image you've generated this session.</p></div></header>
+      <div class="gallery" id="galleryFull"></div>
+      <p class="empty-hint" id="galleryEmptyHint">Nothing here yet — head to Text to Image to create your first piece.</p>
+    </section>
+
+    <!-- ---------- FAVORITES VIEW ---------- -->
+    <section class="view" id="view-favorites" hidden>
+      <header class="page-header"><div><h2 class="page-header__title">Favorites</h2><p class="page-header__sub">Images you've starred, all in one place.</p></div></header>
+      <div class="gallery" id="favoritesGrid"></div>
+      <p class="empty-hint" id="favoritesEmptyHint">Star an image from the Gallery to see it here.</p>
+    </section>
+
+    <!-- ---------- HISTORY VIEW ---------- -->
+    <section class="view" id="view-history" hidden>
+      <header class="page-header"><div><h2 class="page-header__title">Prompt History</h2><p class="page-header__sub">Every prompt you've run — search or filter to find one again.</p></div></header>
+      <div class="history-toolbar">
+        <input type="text" id="historySearch" class="history-toolbar__search" placeholder="Search prompts…">
+        <select id="historyStyleFilter" class="history-toolbar__filter">
+          <option value="all">All styles</option>
+          {% for s in style_presets %}<option value="{{ s }}">{{ s.replace('_',' ').title() }}</option>{% endfor %}
+        </select>
+        <select id="historyDateFilter" class="history-toolbar__filter">
+          <option value="all">Any time</option>
+          <option value="today">Today</option>
+          <option value="week">Past 7 days</option>
+        </select>
+      </div>
+      <div class="history-list" id="historyList"></div>
+      <p class="empty-hint" id="historyEmptyHint">No generations yet.</p>
+    </section>
+
+    <!-- ---------- DOWNLOADS (stub) ---------- -->
+    <section class="view" id="view-downloads" hidden>
+      <header class="page-header"><div><h2 class="page-header__title">Downloads</h2><p class="page-header__sub">How your images get saved.</p></div></header>
+      <div class="stub-panel glass"><p>There's no separate download queue — click <strong>⤓ Download</strong> on any image in Gallery, Favorites, or your results, and it saves straight to your browser's default downloads folder.</p></div>
+    </section>
+
+    <!-- ---------- SETTINGS VIEW ---------- -->
+    <section class="view" id="view-settings" hidden>
+      <header class="page-header"><div><h2 class="page-header__title">Settings</h2><p class="page-header__sub">Appearance and model info.</p></div></header>
+      <div class="settings-card glass">
+        <div class="settings-row">
+          <div>
+            <p class="settings-row__label">Theme</p>
+            <p class="muted" style="margin:2px 0 0;">Switch between light and dark.</p>
+          </div>
+          <button class="theme-toggle" id="themeToggle" type="button">
+            <span id="themeToggleIcon">☾</span> <span id="themeToggleLabel">Dark mode</span>
+          </button>
+        </div>
+        <div class="settings-row">
+          <div>
+            <p class="settings-row__label">Model</p>
+            <p class="muted mono" style="margin:2px 0 0;">{{ model_id }}</p>
+          </div>
+          <span class="dot dot--live"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- HELP (stub) ---------- -->
+    <section class="view" id="view-help" hidden>
+      <header class="page-header"><div><h2 class="page-header__title">Help &amp; Docs</h2><p class="page-header__sub">Quick reference for getting the most out of VisionCrafter.</p></div></header>
+      <div class="stub-panel glass" style="text-align:left;">
+        <p><strong>Prompt</strong> — describe the subject, setting, and mood. Short prompts get auto-expanded by the enhancer.</p>
+        <p><strong>Negative Prompt</strong> — list what you don't want (defaults are pre-filled for common artifacts).</p>
+        <p><strong>CFG Scale</strong> — how strictly the model follows your prompt; higher = more literal, lower = more creative freedom.</p>
+        <p><strong>Steps</strong> — more denoising steps generally means more detail, at the cost of speed.</p>
+        <p><strong>Seed</strong> — leave blank for a random result each time, or set a number to reproduce the same image.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox__close" id="lightboxClose">✕</button>
+  <img id="lightboxImg" alt="Generated image, fullscreen">
+  <div class="lightbox__meta mono" id="lightboxMeta"></div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
