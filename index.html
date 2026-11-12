@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionCrafter AI — Next-Gen AI Image Creation Studio</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              purple: '#C084FC',
+              pink: '#E879A8',
+              lightPink: '#F9A8D4',
+              navy: '#1F1B2E',
+              gray: '#6B6B80',
+              lavenderBg: '#F7F5FF',
+              lavenderBorder: '#DDD6FE',
+              pinkBg: '#FFF5F7',
+              pinkBorder: '#FBCFE8',
+            }
+          },
+          boxShadow: {
+            'glow-purple': '0 10px 25px -5px rgba(192, 132, 252, 0.4)',
+            'soft-card': '0 4px 24px -2px rgba(192, 132, 252, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.02)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel Standalone for in-browser JSX parsing -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #FAF9FE;
+      background-image: 
+        radial-gradient(circle at 10% 8%, rgba(192, 132, 252, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 90% 92%, rgba(249, 168, 212, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(243, 238, 255, 0.4) 0%, transparent 60%);
+      background-attachment: fixed;
+      color: #1F1B2E;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Custom range slider styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #EDE9FE;
+      height: 6px;
+      border-radius: 9999px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #A855F7;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+      transition: transform 0.15s ease, background-color 0.15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #9333EA;
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #A855F7;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+      border: none;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #E2D9F3;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #C4B5FD;
+    }
+
+    /* Gradient Brand Text */
+    .brand-gradient-text {
+      background: linear-gradient(135deg, #C084FC 0%, #E879A8 50%, #F9A8D4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-gradient-bg {
+      background: linear-gradient(135deg, #C084FC 0%, #E879A8 50%, #F9A8D4 100%);
+    }
+
+    .brand-gradient-bg-hover:hover {
+      background: linear-gradient(135deg, #B574F8 0%, #DE689A 50%, #F597C8 100%);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-[#1F1B2E] antialiased selection:bg-purple-200 selection:text-purple-900">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // ==========================================
+    // Lucide Icons (Rendered as Crisp Inline SVGs)
+    // ==========================================
+    const Icon = ({ name, size = 18, className = "" }) => {
+      const icons = {
+        sparkles: (
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+        ),
+        wand: (
+          <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72ZM14 7l3 3M5 6v4M3 8h4M19 14v4M17 16h4" />
+        ),
+        grid: (
+          <>
+            <rect width="7" height="7" x="3" y="3" rx="1" />
+            <rect width="7" height="7" x="14" y="3" rx="1" />
+            <rect width="7" height="7" x="14" y="14" rx="1" />
+            <rect width="7" height="7" x="3" y="14" rx="1" />
+          </>
+        ),
+        image: (
+          <>
+            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+            <circle cx="9" cy="9" r="2" />
+            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+          </>
+        ),
+        minusSquare: (
+          <>
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <path d="M8 12h8" />
+          </>
+        ),
+        palette: (
+          <>
+            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+            <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+            <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+            <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2Z" />
+          </>
+        ),
+        history: (
+          <>
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <path d="M12 7v5l4 2" />
+          </>
+        ),
+        heart: (
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+        ),
+        gallery: (
+          <>
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <path d="M3 9h18M9 21V9" />
+          </>
+        ),
+        download: (
+          <>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" x2="12" y1="15" y2="3" />
+          </>
+        ),
+        settings: (
+          <>
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </>
+        ),
+        chevronLeft: <path d="m15 18-6-6 6-6" />,
+        chevronRight: <path d="m9 18 6-6-6-6" />,
+        help: (
+          <>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <path d="M12 17h.01" />
+          </>
+        ),
+        imagePlus: (
+          <>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7" />
+            <line x1="16" x2="22" y1="5" y2="5" />
+            <line x1="19" x2="19" y1="2" y2="8" />
+            <circle cx="9" cy="9" r="2" />
+            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+          </>
+        ),
+        camera: (
+          <>
+            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+            <circle cx="12" cy="13" r="3" />
+          </>
+        ),
+        flower: (
+          <>
+            <path d="M12 7.5a4.5 4.5 0 1 1 4.5 4.5M12 7.5A4.5 4.5 0 1 0 7.5 12M12 7.5V9m4.5 3a4.5 4.5 0 1 1-4.5 4.5M16.5 12H15m-4.5 4.5a4.5 4.5 0 1 1-4.5-4.5M12 16.5V15m-4.5-3H9" />
+            <circle cx="12" cy="12" r="3" />
+          </>
+        ),
+        leaf: (
+          <>
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+          </>
+        ),
+        zap: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
+        clapperboard: (
+          <>
+            <path d="M20.2 6 3 11l-.9-3 17.2-5Z" />
+            <path d="m6.2 5.3 3.1 3.9" />
+            <path d="m12.4 3.4 3.1 4" />
+            <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+          </>
+        ),
+        droplet: <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />,
+        pencil: (
+          <>
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+            <path d="m15 5 4 4" />
+          </>
+        ),
+        gem: (
+          <>
+            <path d="M6 3h12l4 6-10 13L2 9Z" />
+            <path d="M11 3 8 9l4 13 4-13-3-6" />
+            <path d="M2 9h20" />
+          </>
+        ),
+        box: (
+          <>
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <polyline points="3.29 7 12 12 20.71 7" />
+            <line x1="12" x2="12" y1="22" y2="12" />
+          </>
+        ),
+        gamepad: (
+          <>
+            <line x1="6" x2="10" y1="12" y2="12" />
+            <line x1="8" x2="8" y1="10" y2="14" />
+            <line x1="15" x2="15.01" y1="13" y2="13" />
+            <line x1="18" x2="18.01" y1="11" y2="11" />
+            <rect width="20" height="12" x="2" y="6" rx="6" />
+          </>
+        ),
+        film: (
+          <>
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <path d="M7 3v18M17 3v18M3 7.5h4M3 12h18M3 16.5h4M17 7.5h4M17 16.5h4" />
+          </>
+        ),
+        user: (
+          <>
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </>
+        ),
+        rocket: (
+          <>
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+          </>
+        ),
+        monitor: (
+          <>
+            <rect width="20" height="14" x="2" y="3" rx="2" />
+            <line x1="8" x2="16" y1="21" y2="21" />
+            <line x1="12" x2="12" y1="17" y2="21" />
+          </>
+        ),
+        refresh: (
+          <>
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+            <path d="M21 3v5h-5" />
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+            <path d="M8 16H3v5" />
+          </>
+        ),
+        maximize: (
+          <>
+            <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+            <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+            <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+            <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+          </>
+        ),
+        x: <path d="M18 6 6 18M6 6l12 12" />,
+        copy: (
+          <>
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+          </>
+        ),
+        check: <polyline points="20 6 9 17 4 12" />,
+        dices: (
+          <>
+            <rect width="12" height="12" x="2" y="10" rx="2" ry="2" />
+            <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3.18l-5.74-5.74a2.24 2.24 0 0 0-3.18 0L9 5.08" />
+            <circle cx="8" cy="16" r="1" fill="currentColor" />
+          </>
+        ),
+        share: (
+          <>
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" />
+            <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" />
+          </>
+        )
+      };
+
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width={size}
+          height={size}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+        >
+          {icons[name] || icons.sparkles}
+        </svg>
+      );
+    };
+
+    // ==========================================
+    // Art Styles Catalog (16 Distinct Styles)
+    // ==========================================
+    const ART_STYLES = [
+      { id: 'realistic', name: 'Realistic', icon: 'camera', gradient: 'from-slate-600 to-slate-800' },
+      { id: 'anime', name: 'Anime', icon: 'flower', gradient: 'from-pink-400 to-rose-500' },
+      { id: 'ghibli', name: 'Ghibli', icon: 'leaf', gradient: 'from-emerald-400 to-teal-500' },
+      { id: 'fantasy', name: 'Fantasy', icon: 'sparkles', gradient: 'from-purple-500 to-indigo-600' },
+      { id: 'cyberpunk', name: 'Cyberpunk', icon: 'zap', gradient: 'from-cyan-400 to-blue-600' },
+      { id: 'pixar', name: 'Pixar', icon: 'clapperboard', gradient: 'from-amber-400 to-orange-500' },
+      { id: 'oil-painting', name: 'Oil Painting', icon: 'palette', gradient: 'from-amber-500 to-orange-600' },
+      { id: 'watercolor', name: 'Watercolor', icon: 'droplet', gradient: 'from-sky-400 to-blue-500' },
+      { id: 'sketch', name: 'Sketch', icon: 'pencil', gradient: 'from-zinc-500 to-neutral-700' },
+      { id: 'low-poly', name: 'Low Poly', icon: 'gem', gradient: 'from-blue-500 to-indigo-600' },
+      { id: '3d-render', name: '3D Render', icon: 'box', gradient: 'from-fuchsia-500 to-pink-600' },
+      { id: 'pixel-art', name: 'Pixel Art', icon: 'gamepad', gradient: 'from-lime-400 to-emerald-500' },
+      { id: 'cinematic', name: 'Cinematic', icon: 'film', gradient: 'from-red-500 to-amber-600' },
+      { id: 'portrait', name: 'Portrait', icon: 'user', gradient: 'from-rose-400 to-pink-500' },
+      { id: 'concept-art', name: 'Concept Art', icon: 'rocket', gradient: 'from-purple-600 to-violet-800' },
+      { id: 'digital-illus', name: 'Digital Illus.', icon: 'monitor', gradient: 'from-teal-400 to-cyan-600' },
+    ];
+
+    // Curated high quality art photos matching each style
+    const STYLE_IMAGE_POOLS = {
+      realistic: [
+        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+      ],
+      anime: [
+        'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80',
+      ],
+      cyberpunk: [
+        'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80',
+      ],
+      fantasy: [
+        'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
+      ],
+      '3d-render': [
+        'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1633167606207-d840b5070fc2?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+      ],
+      ghibli: [
+        'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80',
+      ],
+      cinematic: [
+        'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80',
+      ]
+    };
+
+    const SURPRISE_PROMPTS = [
+      "A mystical cyberpunk kitsune with nine iridescent glowing tails standing in a rainy neon Tokyo alley, cinematic lighting, 8k resolution",
+      "An ethereal floating crystal library in the clouds with ancient books bathed in soft golden hour sunlight, photorealistic",
+      "A cute bioluminescent baby dragon curled up on an ancient mossy rock inside a glowing enchanted cavern",
+      "Close up portrait of a cyberpunk robotic woman with ornate golden filigree circuits and gentle violet eyes, studio lighting",
+      "Hyperdetailed miniature diorama of a cozy Ghibli style bakery inside an overgrown giant oak tree"
+    ];
+
+    // ==========================================
+    // Main App Component
+    // ==========================================
+    function App() {
+      // Screen & Navigation
+      const [currentScreen, setCurrentScreen] = useState('landing'); // 'landing' | 'app'
+      const [activeTab, setActiveTab] = useState('text-to-image');
+      const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+      const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+      // Studio Controls State
+      const [prompt, setPrompt] = useState("A colorful ethereal portrait of a celestial goddess with glowing pastel flowers and cosmic stardust");
+      const [negativePrompt, setNegativePrompt] = useState("blurry, low quality, distorted, watermark, deformed anatomy, bad proportions");
+      const [imageSize, setImageSize] = useState('1:1'); // '1:1' | '16:9' | '9:16'
+      const [cfgScale, setCfgScale] = useState(7);
+      const [steps, setSteps] = useState(30);
+      const [seed, setSeed] = useState("");
+      const [imageCount, setImageCount] = useState(4);
+      const [selectedStyle, setSelectedStyle] = useState('Realistic');
+
+      // Generation & Results State
+      const [isGenerating, setIsGenerating] = useState(false);
+      const [genProgress, setGenProgress] = useState(0);
+      const [genStepText, setGenStepText] = useState("");
+      const [results, setResults] = useState([]);
+      const [favorites, setFavorites] = useState(new Set());
+      const [history, setHistory] = useState([]);
+
+      // Modals
+      const [lightboxImage, setLightboxImage] = useState(null);
+      const [isHelpOpen, setIsHelpOpen] = useState(false);
+      const [isProOpen, setIsProOpen] = useState(false);
+      const [copyToast, setCopyToast] = useState(false);
+
+      const resultsRef = useRef(null);
+
+      // Handle Surprise Me
+      const handleSurpriseMe = () => {
+        const rand = SURPRISE_PROMPTS[Math.floor(Math.random() * SURPRISE_PROMPTS.length)];
+        setPrompt(rand);
+      };
+
+      // Toggle Favorite
+      const toggleFavorite = (id, imgObj) => {
+        setFavorites(prev => {
+          const next = new Set(prev);
+          if (next.has(id)) {
+            next.delete(id);
+          } else {
+            next.add(id);
+          }
+          return next;
+        });
+      };
+
+      // Generate Image Action
+      const handleGenerate = () => {
+        if (!prompt.trim() || isGenerating) return;
+
+        setIsGenerating(true);
+        setGenProgress(10);
+        setGenStepText("Allocating GPU tensor buffers...");
+
+        const stepsList = [
+          { p: 28, text: "Applying prompt conditioning & CFG guidance..." },
+          { p: 58, text: `Synthesizing ${steps} sampling steps in latent space...` },
+          { p: 85, text: "Running VAE latent decoder..." },
+          { p: 100, text: "Finalizing high-res render..." },
+        ];
+
+        let i = 0;
+        const interval = setInterval(() => {
+          if (i < stepsList.length) {
+            setGenProgress(stepsList[i].p);
+            setGenStepText(stepsList[i].text);
+            i++;
+          } else {
+            clearInterval(interval);
+
+            // Generate images
+            const styleKey = selectedStyle.toLowerCase().replace(' ', '-');
+            const pool = STYLE_IMAGE_POOLS[styleKey] || STYLE_IMAGE_POOLS['realistic'];
+            const chosenSeed = seed.trim() ? seed.trim() : Math.floor(Math.random() * 999999 + 100000).toString();
+
+            const newImages = Array.from({ length: imageCount }).map((_, idx) => {
+              const url = pool[idx % pool.length] || pool[0];
+              return {
+                id: 'gen-' + Date.now() + '-' + idx,
+                url: url,
+                prompt: prompt,
+                negativePrompt: negativePrompt,
+                style: selectedStyle,
+                seed: (parseInt(chosenSeed) + idx).toString(),
+                size: imageSize,
+                cfg: cfgScale,
+                steps: steps,
+                aspect: imageSize,
+                createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              };
+            });
+
+            setResults(newImages);
+            setHistory(prev => [
+              {
+                id: 'batch-' + Date.now(),
+                prompt,
+                style: selectedStyle,
+                images: newImages,
+                timestamp: 'Just now',
+              },
+              ...prev
+            ]);
+
+            setIsGenerating(false);
+            setGenProgress(0);
+
+            // Scroll to results
+            setTimeout(() => {
+              if (resultsRef.current) {
+                resultsRef.current.scrollIntoView({ behavior: 'smooth' });
+              }
+            }, 100);
+          }
+        }, 380);
+      };
+
+      const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        setCopyToast(true);
+        setTimeout(() => setCopyToast(false), 2000);
+      };
+
+      const triggerDownload = (img) => {
+        const link = document.createElement('a');
+        link.href = img.url;
+        link.download = `VisionCrafter-${img.style.toLowerCase()}-${img.seed}.jpg`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      // ==========================================
+      // SCREEN 1: LANDING HERO
+      // ==========================================
+      if (currentScreen === 'landing') {
+        return (
+          <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden">
+            {/* Top Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-purple-200 shadow-sm text-purple-600 text-sm font-medium mb-8 hover:border-purple-300 transition-all cursor-default">
+              <Icon name="sparkles" size={16} className="text-purple-500 animate-pulse" />
+              <span>Powered by Advanced Diffusion Models</span>
+            </div>
+
+            {/* Giant Title */}
+            <h1 className="text-6xl md:text-7xl font-extrabold tracking-tight brand-gradient-text text-center mb-6 leading-tight">
+              VisionCrafter AI
+            </h1>
+
+            {/* Gray Subtitle Paragraph */}
+            <p className="max-w-2xl text-center text-[#6B6B80] text-base md:text-lg leading-relaxed mb-10 font-normal">
+              VisionCrafter AI transforms your imagination into stunning AI-generated artwork using advanced diffusion models. Simply describe your vision, choose your preferred style, and let AI create breathtaking, high-quality images in seconds.
+            </p>
+
+            {/* Get Started Button */}
+            <button
+              onClick={() => setCurrentScreen('app')}
+              className="group brand-gradient-bg brand-gradient-bg-hover text-white font-bold text-base px-9 py-4 rounded-2xl shadow-lg shadow-purple-300/60 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-3 mb-16 cursor-pointer"
+            >
+              <Icon name="wand" size={20} className="group-hover:rotate-12 transition-transform duration-300" />
+              <span>Get Started</span>
+            </button>
+
+            {/* Three Sample Art Thumbnails with Rotations (-6deg, 0deg, +6deg) */}
+            <div className="flex items-center justify-center gap-4 md:gap-6 pt-4">
+              {/* Card 1: Colorful painted face (-6deg) */}
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border-4 border-white shadow-xl shadow-purple-900/10 -rotate-6 hover:rotate-0 hover:scale-105 transition-all duration-300 cursor-pointer">
+                <img
+                  src="https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=400&q=80"
+                  alt="Colorful painted face art"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Card 2: Purple/pink abstract wave (0deg) */}
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border-4 border-white shadow-xl shadow-purple-900/10 rotate-0 hover:scale-105 transition-all duration-300 cursor-pointer z-10">
+                <img
+                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80"
+                  alt="Purple pink abstract wave"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Card 3: Neon RGB keyboard (+6deg) */}
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border-4 border-white shadow-xl shadow-purple-900/10 rotate-6 hover:rotate-0 hover:scale-105 transition-all duration-300 cursor-pointer">
+                <img
+                  src="https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=400&q=80"
+                  alt="Neon RGB illuminated keyboard"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Subtle bottom note */}
+            <p className="mt-14 text-xs text-gray-400 font-medium">
+              Click "Get Started" to launch the interactive Text to Image studio
+            </p>
+          </div>
+        );
+      }
+
+      // ==========================================
+      // SCREEN 2: MAIN APP LAYOUT WITH SIDEBAR
+      // ==========================================
+      const navItems = [
+        { id: 'dashboard', label: 'Dashboard', icon: 'grid' },
+        { id: 'text-to-image', label: 'Text to Image', icon: 'wand' },
+        { id: 'image-to-image', label: 'Image to Image', icon: 'image' },
+        { id: 'negative-prompt', label: 'Negative Prompt', icon: 'minusSquare' },
+        { id: 'art-styles', label: 'Art Styles', icon: 'palette' },
+        { id: 'history', label: 'Prompt History', icon: 'history' },
+        { id: 'favorites', label: 'Favorites', icon: 'heart', badge: favorites.size > 0 ? favorites.size : null },
+        { id: 'gallery', label: 'AI Gallery', icon: 'gallery' },
+        { id: 'downloads', label: 'Downloads', icon: 'download' },
+        { id: 'settings', label: 'Settings', icon: 'settings' },
+      ];
+
+      return (
+        <div className="min-h-screen flex bg-transparent relative">
+          {/* Toast Notification */}
+          {copyToast && (
+            <div className="fixed top-6 right-6 z-50 bg-[#1F1B2E] text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-sm font-medium animate-fade-in">
+              <Icon name="check" size={16} className="text-emerald-400" />
+              <span>Copied to clipboard!</span>
+            </div>
+          )}
+
+          {/* ==========================================
+              SIDEBAR
+          =========================================== */}
+          {/* Mobile Overlay */}
+          {mobileNavOpen && (
+            <div
+              onClick={() => setMobileNavOpen(false)}
+              className="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 md:hidden"
+            />
+          )}
+
+          <aside
+            className={`fixed md:sticky top-0 left-0 h-screen bg-white border-r border-[#EDE9FE]/80 flex flex-col justify-between z-40 transition-all duration-300 ease-in-out ${
+              sidebarCollapsed ? 'w-[74px]' : 'w-[280px]'
+            } ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+          >
+            {/* Top Brand Logo */}
+            <div>
+              <div
+                onClick={() => setCurrentScreen('landing')}
+                className={`p-5 flex items-center gap-3 cursor-pointer select-none transition-all ${
+                  sidebarCollapsed ? 'justify-center px-2' : ''
+                }`}
+                title="Return to Home"
+              >
+                {/* Gradient rounded square with wand icon */}
+                <div className="w-10 h-10 rounded-2xl brand-gradient-bg flex items-center justify-center text-white shadow-md shadow-purple-300/50 flex-shrink-0">
+                  <Icon name="wand" size={20} />
+                </div>
+                {!sidebarCollapsed && (
+                  <div className="flex flex-col">
+                    <span className="font-bold text-[#1F1B2E] text-base leading-tight tracking-tight">VisionCrafter</span>
+                    <span className="text-purple-600 font-bold text-xs tracking-wide">AI</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Navigation List */}
+              <nav className="px-3 py-2 space-y-1">
+                {navItems.map((item) => {
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setMobileNavOpen(false);
+                      }}
+                      title={sidebarCollapsed ? item.label : undefined}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-[#F5EEFF] to-[#FFF0F7] border-l-4 border-purple-500 text-purple-600 font-semibold shadow-xs'
+                          : 'text-[#6B6B80] hover:text-[#1F1B2E] hover:bg-[#F9F7FD]'
+                      } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
+                    >
+                      <Icon
+                        name={item.icon}
+                        size={19}
+                        className={isActive ? 'text-purple-600' : 'text-gray-400 group-hover:text-gray-600'}
+                      />
+                      {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                      {!sidebarCollapsed && item.badge && (
+                        <span className="ml-auto bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full font-bold">
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Sidebar Bottom Controls: Help & Collapse Chevron */}
+            <div className="p-3 border-t border-[#EDE9FE]/70 flex flex-col items-center gap-2">
+              {sidebarCollapsed && (
+                <button
+                  onClick={() => setIsHelpOpen(true)}
+                  className="w-10 h-10 rounded-xl hover:bg-purple-50 text-gray-400 hover:text-purple-600 flex items-center justify-center transition-colors"
+                  title="Prompt Guide & Help"
+                >
+                  <Icon name="help" size={20} />
+                </button>
+              )}
+
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className={`w-full py-2.5 rounded-xl bg-purple-50/60 hover:bg-purple-100/80 text-purple-600 flex items-center justify-center transition-all ${
+                  sidebarCollapsed ? 'px-0' : 'px-3'
+                }`}
+                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {sidebarCollapsed ? (
+                  <Icon name="chevronRight" size={18} />
+                ) : (
+                  <div className="flex items-center gap-2 text-xs font-semibold">
+                    <Icon name="chevronLeft" size={16} />
+                    <span>Collapse menu</span>
+                  </div>
+                )}
+              </button>
+            </div>
+          </aside>
+
+          {/* ==========================================
+              MAIN CONTENT COLUMN
+          =========================================== */}
+          <main className="flex-1 flex flex-col min-w-0 pb-24">
+            {/* Top Header */}
+            <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-md border-b border-[#EDE9FE]/80 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {/* Mobile Menu Toggle Button */}
+                <button
+                  onClick={() => setMobileNavOpen(true)}
+                  className="p-2 rounded-xl text-gray-500 hover:bg-purple-50 md:hidden"
+                >
+                  <Icon name="grid" size={22} />
+                </button>
+
+                <div>
+                  <h2 className="text-xl md:text-2xl font-bold text-[#1F1B2E] tracking-tight">
+                    {activeTab === 'text-to-image' && 'Create Your AI Artwork'}
+                    {activeTab === 'dashboard' && 'Studio Dashboard'}
+                    {activeTab === 'image-to-image' && 'Image to Image Synthesizer'}
+                    {activeTab === 'negative-prompt' && 'Negative Prompt Builder'}
+                    {activeTab === 'art-styles' && 'Art Styles Explorer'}
+                    {activeTab === 'history' && 'Generation History'}
+                    {activeTab === 'favorites' && 'Your Favorites'}
+                    {activeTab === 'gallery' && 'Community AI Gallery'}
+                    {activeTab === 'downloads' && 'Export & Downloads'}
+                    {activeTab === 'settings' && 'Studio Preferences'}
+                  </h2>
+                  <p className="text-xs md:text-sm text-[#6B6B80]">
+                    {activeTab === 'text-to-image' && 'Describe your vision and let AI bring it to life'}
+                    {activeTab === 'dashboard' && 'Welcome back to your creative diffusion suite'}
+                    {activeTab === 'image-to-image' && 'Transform existing images with style conditioning'}
+                    {activeTab === 'negative-prompt' && 'Filter out artifacts, distortion, and unwanted elements'}
+                    {activeTab === 'art-styles' && 'Browse all 16 fine-tuned visual aesthetics'}
+                    {activeTab === 'history' && 'Review, remix and re-run all previous prompt batches'}
+                    {activeTab === 'favorites' && 'Curate your finest generative masterpieces'}
+                    {activeTab === 'gallery' && 'Get inspired by trending creations from the community'}
+                    {activeTab === 'downloads' && 'High resolution lossless downloads and batch export'}
+                    {activeTab === 'settings' && 'Configure default sampling, models, and interface'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Pro Plan Pill Button */}
+              <button
+                onClick={() => setIsProOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#F3EEFF] hover:bg-[#EAE1FE] text-purple-600 text-sm font-medium border border-purple-200/80 shadow-xs transition-all active:scale-95"
+              >
+                <Icon name="sparkles" size={15} className="text-purple-500" />
+                <span>Pro Plan</span>
+              </button>
+            </header>
+
+            {/* Main Content Area */}
+            <div className="max-w-5xl w-full mx-auto px-4 md:px-8 py-6 space-y-6">
+
+              {/* ----------------------------------------------------
+                  VIEW: TEXT TO IMAGE (MAIN STUDIO)
+              ----------------------------------------------------- */}
+              {activeTab === 'text-to-image' && (
+                <>
+                  {/* Card 1: Prompt Card */}
+                  <div className="bg-white rounded-3xl p-6 border border-[#EDE9FE]/80 shadow-soft-card space-y-5">
+                    {/* Prompt input */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="font-bold text-[#1F1B2E] text-sm">Prompt</label>
+                        <button
+                          type="button"
+                          onClick={handleSurpriseMe}
+                          className="inline-flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-700 font-semibold px-2.5 py-1 rounded-lg hover:bg-purple-50 transition-colors"
+                        >
+                          <Icon name="dices" size={14} />
+                          <span>Surprise me</span>
+                        </button>
+                      </div>
+                      <textarea
+                        rows="3"
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Describe the image you want to generate..."
+                        className="w-full bg-[#F7F5FF] border border-[#DDD6FE] focus:border-purple-400 focus:ring-4 focus:ring-purple-200/40 rounded-2xl p-4 text-sm text-[#1F1B2E] placeholder-[#9CA3AF] outline-none transition-all resize-none font-normal"
+                      />
+                    </div>
+
+                    {/* Negative prompt input */}
+                    <div>
+                      <label className="font-bold text-[#1F1B2E] text-sm flex items-center gap-2 mb-2">
+                        <span>Negative Prompt</span>
+                        <span className="font-normal text-[#6B6B80] text-xs">(what to avoid)</span>
+                      </label>
+                      <textarea
+                        rows="2"
+                        value={negativePrompt}
+                        onChange={(e) => setNegativePrompt(e.target.value)}
+                        placeholder="blurry, low quality, distorted, watermark..."
+                        className="w-full bg-[#FFF5F7] border border-[#FBCFE8] focus:border-pink-400 focus:ring-4 focus:ring-pink-200/40 rounded-2xl p-4 text-sm text-[#1F1B2E] placeholder-[#9CA3AF] outline-none transition-all resize-none font-normal"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Card 2: Settings Card (4-column grid) */}
+                  <div className="bg-white rounded-3xl p-6 border border-[#EDE9FE]/80 shadow-soft-card">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+                      
+                      {/* Col 1: Image Size */}
+                      <div>
+                        <span className="block font-bold text-[#1F1B2E] text-xs mb-3">Image Size</span>
+                        <div className="flex items-center gap-2">
+                          {['1:1', '16:9', '9:16'].map((sz) => {
+                            const isSelected = imageSize === sz;
+                            return (
+                              <button
+                                key={sz}
+                                type="button"
+                                onClick={() => setImageSize(sz)}
+                                className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all ${
+                                  isSelected
+                                    ? 'brand-gradient-bg text-white shadow-xs'
+                                    : 'bg-[#F7F5FF] text-[#6B6B80] hover:text-purple-600 border border-[#DDD6FE]/70'
+                                }`}
+                              >
+                                {sz}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Col 2: CFG Scale */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-bold text-[#1F1B2E] text-xs">
+                            CFG Scale <span className="text-purple-600 font-bold">{cfgScale}</span>
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="20"
+                          step="0.5"
+                          value={cfgScale}
+                          onChange={(e) => setCfgScale(parseFloat(e.target.value))}
+                          className="w-full cursor-pointer"
+                        />
+                        <div className="flex justify-between text-[11px] text-[#6B6B80] mt-1 font-medium">
+                          <span>1</span>
+                          <span>20</span>
+                        </div>
+                      </div>
+
+                      {/* Col 3: Steps */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-bold text-[#1F1B2E] text-xs">
+                            Steps <span className="text-purple-600 font-bold">{steps}</span>
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="10"
+                          max="100"
+                          step="1"
+                          value={steps}
+                          onChange={(e) => setSteps(parseInt(e.target.value))}
+                          className="w-full cursor-pointer"
+                        />
+                        <div className="flex justify-between text-[11px] text-[#6B6B80] mt-1 font-medium">
+                          <span>10</span>
+                          <span>100</span>
+                        </div>
+                      </div>
+
+                      {/* Col 4: Seed (optional) & Images */}
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block font-bold text-[#1F1B2E] text-xs mb-1.5">Seed (optional)</label>
+                          <input
+                            type="text"
+                            value={seed}
+                            onChange={(e) => setSeed(e.target.value)}
+                            placeholder="Random"
+                            className="w-full bg-[#F7F5FF] border border-[#DDD6FE] focus:border-purple-400 focus:ring-2 focus:ring-purple-200/40 rounded-xl px-3 py-1.5 text-xs text-[#1F1B2E] placeholder-[#9CA3AF] outline-none"
+                          />
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-bold text-[#1F1B2E] text-xs">Images: {imageCount}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {[1, 2, 4].map((count) => {
+                              const isSelected = imageCount === count;
+                              return (
+                                <button
+                                  key={count}
+                                  type="button"
+                                  onClick={() => setImageCount(count)}
+                                  className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all ${
+                                    isSelected
+                                      ? 'brand-gradient-bg text-white shadow-xs'
+                                      : 'bg-[#F7F5FF] text-[#6B6B80] hover:text-purple-600 border border-[#DDD6FE]/70'
+                                  }`}
+                                >
+                                  {count}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Card 3: Art Style Card (8 columns x 2 rows = 16 tiles) */}
+                  <div className="bg-white rounded-3xl p-6 border border-[#EDE9FE]/80 shadow-soft-card">
+                    <div className="flex items-center justify-between mb-5">
+                      <h3 className="font-bold text-[#1F1B2E] text-sm">Art Style</h3>
+                      <span className="text-xs text-[#6B6B80] font-medium">{selectedStyle} selected</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                      {ART_STYLES.map((style) => {
+                        const isSelected = selectedStyle.toLowerCase() === style.name.toLowerCase();
+                        return (
+                          <button
+                            key={style.id}
+                            type="button"
+                            onClick={() => setSelectedStyle(style.name)}
+                            className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all cursor-pointer group ${
+                              isSelected
+                                ? 'bg-white border-2 border-purple-500 shadow-sm'
+                                : 'bg-transparent border border-transparent hover:border-purple-200 hover:bg-[#FBF9FE]'
+                            }`}
+                          >
+                            {/* Gradient rounded square with white icon */}
+                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${style.gradient} flex items-center justify-center text-white mb-2 shadow-xs group-hover:scale-105 transition-transform`}>
+                              <Icon name={style.icon} size={20} />
+                            </div>
+                            <span className={`text-[11px] font-medium tracking-tight text-center truncate w-full ${
+                              isSelected ? 'text-purple-600 font-bold' : 'text-[#6B6B80]'
+                            }`}>
+                              {style.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Full-width "Generate Image" Gradient Button */}
+                  <button
+                    type="button"
+                    onClick={handleGenerate}
+                    disabled={!prompt.trim() || isGenerating}
+                    className={`w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2.5 transition-all select-none ${
+                      !prompt.trim()
+                        ? 'bg-purple-200 text-white/80 cursor-not-allowed opacity-60'
+                        : isGenerating
+                        ? 'brand-gradient-bg text-white cursor-wait opacity-90 shadow-md'
+                        : 'brand-gradient-bg brand-gradient-bg-hover text-white shadow-lg shadow-purple-300/50 hover:shadow-xl hover:scale-[1.008] active:scale-[0.99] cursor-pointer'
+                    }`}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Icon name="refresh" size={20} className="animate-spin text-white" />
+                        <span>Generating... ({genProgress}%)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="wand" size={20} />
+                        <span>Generate Image</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Generation Progress Bar (shown when synthesizing) */}
+                  {isGenerating && (
+                    <div className="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm space-y-2 animate-fade-in">
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <span className="text-purple-700 flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-purple-500 animate-ping" />
+                          {genStepText}
+                        </span>
+                        <span className="text-purple-600">{genProgress}%</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-purple-100 overflow-hidden">
+                        <div
+                          className="h-full brand-gradient-bg transition-all duration-300 rounded-full"
+                          style={{ width: `${genProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Section 5: Results Area */}
+                  <div ref={resultsRef} className="pt-2">
+                    {results.length === 0 ? (
+                      /* Empty State */
+                      <div className="border-2 border-dashed border-[#DDD6FE] rounded-3xl bg-white/70 p-12 text-center flex flex-col items-center justify-center min-h-[220px]">
+                        <div className="w-14 h-14 rounded-2xl bg-[#F7F5FF] flex items-center justify-center text-purple-400 mb-3 shadow-xs">
+                          <Icon name="imagePlus" size={28} />
+                        </div>
+                        <h4 className="font-bold text-[#1F1B2E] text-base mb-1">Your artwork will appear here</h4>
+                        <p className="text-sm text-[#6B6B80]">Enter a prompt above and hit Generate Image</p>
+                      </div>
+                    ) : (
+                      /* Generated Results Grid */
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-bold text-[#1F1B2E] text-base flex items-center gap-2">
+                            <span>Generated Artwork</span>
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-0.5 rounded-full font-bold">
+                              {results.length} images
+                            </span>
+                          </h4>
+                          <span className="text-xs text-[#6B6B80]">
+                            Style: <strong className="text-purple-600">{selectedStyle}</strong> • Aspect: {imageSize}
+                          </span>
+                        </div>
+
+                        {/* Grid */}
+                        <div className={`grid gap-4 ${
+                          results.length === 1 ? 'grid-cols-1 max-w-lg mx-auto' :
+                          results.length === 2 ? 'grid-cols-1 sm:grid-cols-2' :
+                          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+                        }`}>
+                          {results.map((img) => {
+                            const isFav = favorites.has(img.id);
+                            return (
+                              <div
+                                key={img.id}
+                                className="group relative bg-white rounded-2xl overflow-hidden border border-purple-100 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col"
+                              >
+                                {/* Image Container with Aspect Ratio */}
+                                <div className={`relative w-full overflow-hidden bg-purple-50 ${
+                                  imageSize === '16:9' ? 'aspect-video' :
+                                  imageSize === '9:16' ? 'aspect-[9/16]' :
+                                  'aspect-square'
+                                }`}>
+                                  <img
+                                    src={img.url}
+                                    alt={img.prompt}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+
+                                  {/* Hover Overlay Controls */}
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-3">
+                                    {/* Top Right: Favorite Button */}
+                                    <div className="flex justify-end">
+                                      <button
+                                        type="button"
+                                        onClick={() => toggleFavorite(img.id, img)}
+                                        className={`w-9 h-9 rounded-full flex items-center justify-center transition-transform active:scale-90 ${
+                                          isFav ? 'bg-red-500 text-white' : 'bg-black/50 text-white hover:bg-black/80'
+                                        }`}
+                                        title={isFav ? "Remove favorite" : "Add to favorites"}
+                                      >
+                                        <Icon name="heart" size={16} className={isFav ? "fill-white" : ""} />
+                                      </button>
+                                    </div>
+
+                                    {/* Bottom Controls */}
+                                    <div className="space-y-2">
+                                      <p className="text-xs text-white line-clamp-1 font-medium">{img.prompt}</p>
+                                      <div className="flex items-center gap-1.5 pt-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => setLightboxImage(img)}
+                                          className="flex-1 py-1.5 px-2 bg-white/20 hover:bg-white/30 backdrop-blur-xs text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-colors"
+                                          title="View fullscreen"
+                                        >
+                                          <Icon name="maximize" size={13} />
+                                          <span>Preview</span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => triggerDownload(img)}
+                                          className="w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-xs text-white rounded-lg flex items-center justify-center transition-colors"
+                                          title="Download image"
+                                        >
+                                          <Icon name="download" size={14} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleGenerate()}
+                                          className="w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-xs text-white rounded-lg flex items-center justify-center transition-colors"
+                                          title="Regenerate variation"
+                                        >
+                                          <Icon name="refresh" size={14} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Footer metadata */}
+                                <div className="p-2.5 bg-white flex items-center justify-between text-[11px] text-[#6B6B80]">
+                                  <span className="font-semibold text-purple-600">{img.style}</span>
+                                  <span>Seed: {img.seed}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* ----------------------------------------------------
+                  VIEW: DASHBOARD
+              ----------------------------------------------------- */}
+              {activeTab === 'dashboard' && (
+                <div className="space-y-6">
+                  {/* Hero banner */}
+                  <div className="bg-gradient-to-r from-purple-600 to-pink-500 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                    <div className="max-w-xl z-10 relative">
+                      <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-xs text-xs font-semibold uppercase tracking-wider mb-3">
+                        Studio Overview
+                      </span>
+                      <h3 className="text-3xl font-extrabold mb-2">Welcome to VisionCrafter AI</h3>
+                      <p className="text-purple-100 text-sm leading-relaxed mb-6">
+                        Harness high-speed multi-stage diffusion models with curated styles, fine-tuned sampling, and studio negative prompt conditioning.
+                      </p>
+                      <button
+                        onClick={() => setActiveTab('text-to-image')}
+                        className="px-6 py-2.5 rounded-xl bg-white text-purple-700 font-bold text-sm shadow-md hover:bg-purple-50 transition-all flex items-center gap-2"
+                      >
+                        <Icon name="wand" size={16} />
+                        <span>Launch Generator</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-2xl p-5 border border-purple-100 shadow-soft-card">
+                      <span className="text-xs text-gray-500 block mb-1">Total Generated</span>
+                      <span className="text-2xl font-bold text-[#1F1B2E]">{history.reduce((acc, h) => acc + h.images.length, 0)}</span>
+                    </div>
+                    <div className="bg-white rounded-2xl p-5 border border-purple-100 shadow-soft-card">
+                      <span className="text-xs text-gray-500 block mb-1">Batches Run</span>
+                      <span className="text-2xl font-bold text-purple-600">{history.length}</span>
+                    </div>
+                    <div className="bg-white rounded-2xl p-5 border border-purple-100 shadow-soft-card">
+                      <span className="text-xs text-gray-500 block mb-1">Favorites Saved</span>
+                      <span className="text-2xl font-bold text-pink-500">{favorites.size}</span>
+                    </div>
+                    <div className="bg-white rounded-2xl p-5 border border-purple-100 shadow-soft-card">
+                      <span className="text-xs text-gray-500 block mb-1">Active Style</span>
+                      <span className="text-2xl font-bold text-indigo-600 truncate block">{selectedStyle}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ----------------------------------------------------
+                  VIEW: IMAGE TO IMAGE
+              ----------------------------------------------------- */}
+              {activeTab === 'image-to-image' && (
+                <div className="bg-white rounded-3xl p-6 border border-[#EDE9FE]/80 shadow-soft-card space-y-6">
+                  <div>
+                    <h3 className="font-bold text-[#1F1B2E] text-base mb-1">Source Image conditioning</h3>
+                    <p className="text-xs text-[#6B6B80]">Upload a reference artwork or sketch to guide structure and composition.</p>
+                  </div>
+
+                  <div className="border-2 border-dashed border-purple-200 rounded-2xl p-8 text-center bg-[#F7F5FF]/50 hover:bg-[#F7F5FF] transition-colors cursor-pointer">
+                    <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mx-auto mb-3">
+                      <Icon name="image" size={24} />
+                    </div>
+                    <p className="font-bold text-sm text-[#1F1B2E] mb-1">Click to upload or drag image here</p>
+                    <p className="text-xs text-gray-400">PNG, JPG, or WebP up to 10MB</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="font-bold text-[#1F1B2E] text-xs">Transformation Strength: 0.65</label>
+                    <input type="range" min="0.1" max="1.0" step="0.05" defaultValue="0.65" className="w-full" />
+                    <div className="flex justify-between text-[11px] text-gray-400">
+                      <span>Subtle style transfer (0.1)</span>
+                      <span>Total reimagination (1.0)</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setActiveTab('text-to-image')}
+                    className="w-full py-3.5 brand-gradient-bg text-white font-bold rounded-2xl shadow-md text-sm"
+                  >
+                    Open with Text Prompt
+                  </button>
+                </div>
+              )}
+
+              {/* ----------------------------------------------------
+                  VIEW: NEGATIVE PROMPT BUILDER
+              ----------------------------------------------------- */}
+              {activeTab === 'negative-prompt' && (
+                <div className="bg-white rounded-3xl p-6 border border-[#EDE9FE]/80 shadow-soft-card space-y-6">
+                  <div>
+                    <h3 className="font-bold text-[#1F1B2E] text-base mb-1">Negative Prompt Preset Chips</h3>
+                    <p className="text-xs text-[#6B6B80]">Click any tag below to append it immediately into your negative prompt.</p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      'blurry', 'low quality', 'watermark', 'distorted anatomy', 'extra limbs', 
+                      'poorly drawn face', 'oversaturated', 'grainy', 'deformed hands', 
+                      'text signature', 'out of frame', 'duplicate heads', 'ugly proportions',
+                      'amateur lighting', 'jpeg artifacts', 'bad shadows'
+                    ].map((tag) => {
+                      const alreadyIncluded = negativePrompt.toLowerCase().includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => {
+                            if (alreadyIncluded) {
+                              setNegativePrompt(prev => prev.replace(new RegExp(`(,\\s*)?${tag}`, 'gi'), '').replace(/^,\s*/, ''));
+                            } else {
+                              setNegativePrompt(prev => prev ? `${prev}, ${tag}` : tag);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                            alreadyIncluded
+                              ? 'bg-pink-500 text-white shadow-xs'
+                              : 'bg-pink-50 text-pink-700 hover:bg-pink-100 border border-pink-200'
+                          }`}
+                        >
+                          {alreadyIncluded ? '✓ ' : '+ '}{tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-[#1F1B2E] text-xs block mb-2">Current Negative Prompt:</label>
+                    <textarea
+                      rows="3"
+                      value={negativePrompt}
+                      onChange={(e) => setNegativePrompt(e.target.value)}
+                      className="w-full bg-[#FFF5F7] border border-pink-200 rounded-2xl p-4 text-sm text-[#1F1B2E]"
+                    />
+                  </div>
+
+                  <button
+                    onClick={() => setActiveTab('text-to-image')}
+                    className="brand-gradient-bg text-white font-bold px-6 py-2.5 rounded-xl text-sm"
+                  >
+                    Save & Return to Studio
+                  </button>
+                </div>
+              )}
+
+              {/* ----------------------------------------------------
+                  VIEW: ART STYLES
+              ----------------------------------------------------- */}
+              {activeTab === 'art-styles' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {ART_STYLES.map((style) => (
+                      <div
+                        key={style.id}
+                        onClick={() => {
+                          setSelectedStyle(style.name);
+                          setActiveTab('text-to-image');
+                        }}
+                        className="bg-white rounded-2xl p-5 border border-purple-100 shadow-soft-card hover:shadow-lg hover:border-purple-300 transition-all cursor-pointer group"
+                      >
+                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${style.gradient} flex items-center justify-center text-white mb-3 shadow-md group-hover:scale-105 transition-transform`}>
+                          <Icon name={style.icon} size={22} />
+                        </div>
+                        <h4 className="font-bold text-[#1F1B2E] text-sm mb-1">{style.name}</h4>
+                        <p className="text-xs text-gray-500 mb-3">Click to apply this preset aesthetic to your generation prompt.</p>
+                        <span className="text-xs font-bold text-purple-600 group-hover:underline">Use in Studio →</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ----------------------------------------------------
+                  VIEW: HISTORY
+              ----------------------------------------------------- */}
+              {activeTab === 'history' && (
+                <div className="bg-white rounded-3xl p-6 border border-[#EDE9FE]/80 shadow-soft-card space-y-6">
+                  <h3 className="font-bold text-[#1F1B2E] text-base mb-1">Past Generations in Session</h3>
+                  {history.length === 0 ? (
+                    <div className="text-center py-12 text-gray-400">
+                      <Icon name="history" size={32} className="mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No generations yet. Head over to Text to Image to create your first artwork!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {history.map((item) => (
+                        <div key={item.id} className="p-4 rounded-2xl bg-purple-50/50 border border-purple-100 flex items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <span className="text-xs font-bold text-purple-600 uppercase tracking-wider">{item.style}</span>
+                            <p className="text-sm font-semibold text-[#1F1B2E]">{item.prompt}</p>
+                            <span className="text-xs text-gray-400">{item.timestamp} • {item.images.length} images</span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setPrompt(item.prompt);
+                              setSelectedStyle(item.style);
+                              setResults(item.images);
+                              setActiveTab('text-to-image');
+                            }}
+                            className="px-4 py-2 rounded-xl bg-white text-purple-700 font-bold text-xs border border-purple-200 hover:bg-purple-50 transition-colors"
+                          >
+                            Reuse
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ----------------------------------------------------
+                  VIEW: FAVORITES
+              ----------------------------------------------------- */}
+              {activeTab === 'favorites' && (
+                <div className="bg-white rounded-3xl p-6 border border-[#EDE9FE]/80 shadow-soft-card space-y-6">
+                  <h3 className="font-bold text-[#1F1B2E] text-base mb-1">Favorited Artworks</h3>
+                  {favorites.size === 0 ? (
+                    <div className="text-center py-12 text-gray-400">
+                      <Icon name="heart" size={32} className="mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No favorites yet. Click the heart icon on any generated image to save it here!</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {Array.from(favorites).map((favId) => {
+                        const img = results.find(r => r.id === favId) || {
+                          id: favId,
+                          url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
+                          style: 'Realistic',
+                          seed: '49281'
+                        };
+                        return (
+                          <div key={favId} className="rounded-2xl overflow-hidden border border-purple-100 shadow-sm relative group">
+                            <img src={img.url} alt="Favorite" className="w-full aspect-square object-cover" />
+                            <div className="p-2.5 bg-white flex items-center justify-between text-xs">
+                              <span className="font-bold text-purple-600">{img.style}</span>
+                              <button
+                                onClick={() => toggleFavorite(favId, img)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Icon name="heart" size={14} className="fill-red-500" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ----------------------------------------------------
+                  VIEW: GALLERY
+              ----------------------------------------------------- */}
+              {activeTab === 'gallery' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[
+                      { title: 'Neon Ronin', style: 'Cyberpunk', url: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=800&q=80', prompt: 'Cyberpunk neon ronin standing in rainy shinjuku street' },
+                      { title: 'Sakura Dreamer', style: 'Anime', url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80', prompt: 'Pastel anime maiden with celestial floating cherry blossoms' },
+                      { title: 'Chromatic Flow', style: '3D Render', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80', prompt: 'Smooth 3D glossy abstract ribbons with purple magenta reflections' },
+                      { title: 'Mountain Citadel', style: 'Fantasy', url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80', prompt: 'Ancient floating fantasy fortress above mist covered mountain peaks' },
+                      { title: 'Fine Art Portrait', style: 'Realistic', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80', prompt: 'Studio beauty portrait with volumetric warm amber rim light' },
+                      { title: 'Enchanted Hollow', style: 'Ghibli', url: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80', prompt: 'Warm watercolor green hills with rolling fluffy white clouds' },
+                    ].map((card, i) => (
+                      <div key={i} className="bg-white rounded-2xl overflow-hidden border border-purple-100 shadow-soft-card group flex flex-col">
+                        <div className="relative aspect-square overflow-hidden bg-purple-50">
+                          <img src={card.url} alt={card.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs text-purple-700 text-xs px-2.5 py-1 rounded-full font-bold shadow-xs">
+                            {card.style}
+                          </div>
+                        </div>
+                        <div className="p-4 flex-1 flex flex-col justify-between">
+                          <div>
+                            <h4 className="font-bold text-sm text-[#1F1B2E] mb-1">{card.title}</h4>
+                            <p className="text-xs text-gray-500 line-clamp-2 mb-3">{card.prompt}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setPrompt(card.prompt);
+                              setSelectedStyle(card.style);
+                              setActiveTab('text-to-image');
+                            }}
+                            className="w-full py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-xl text-xs transition-colors"
+                          >
+                            Remix this Prompt
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ----------------------------------------------------
+                  VIEW: DOWNLOADS
+              ----------------------------------------------------- */}
+              {activeTab === 'downloads' && (
+                <div className="bg-white rounded-3xl p-6 border border-[#EDE9FE]/80 shadow-soft-card space-y-6">
+                  <h3 className="font-bold text-[#1F1B2E] text-base mb-1">Export Settings & Batch Queue</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-2xl border border-purple-100 bg-[#F7F5FF]">
+                      <span className="font-bold text-xs text-gray-600 block mb-2">Default Format</span>
+                      <select className="w-full p-2 bg-white rounded-xl border border-purple-200 text-xs font-semibold">
+                        <option>PNG (Lossless 24-bit)</option>
+                        <option>JPEG (High Quality 95%)</option>
+                        <option>WebP (Compressed)</option>
+                      </select>
+                    </div>
+                    <div className="p-4 rounded-2xl border border-purple-100 bg-[#F7F5FF]">
+                      <span className="font-bold text-xs text-gray-600 block mb-2">Upscale Multiplier</span>
+                      <select className="w-full p-2 bg-white rounded-xl border border-purple-200 text-xs font-semibold">
+                        <option>1x Original Resolution</option>
+                        <option>2x Neural Upscale (2048px)</option>
+                        <option>4x Ultra-Res Print (4096px)</option>
+                      </select>
+                    </div>
+                    <div className="p-4 rounded-2xl border border-purple-100 bg-[#F7F5FF]">
+                      <span className="font-bold text-xs text-gray-600 block mb-2">Metadata Embedding</span>
+                      <div className="flex items-center gap-2 mt-2">
+                        <input type="checkbox" defaultChecked className="rounded text-purple-600" />
+                        <span className="text-xs text-gray-700">Embed seed & prompt in EXIF</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ----------------------------------------------------
+                  VIEW: SETTINGS
+              ----------------------------------------------------- */}
+              {activeTab === 'settings' && (
+                <div className="bg-white rounded-3xl p-6 border border-[#EDE9FE]/80 shadow-soft-card space-y-6">
+                  <h3 className="font-bold text-[#1F1B2E] text-base mb-1">Diffusion Studio Preferences</h3>
+                  <div className="space-y-4 max-w-xl">
+                    <div>
+                      <label className="font-bold text-xs text-[#1F1B2E] block mb-1">Default AI Backend Engine</label>
+                      <select className="w-full p-3 bg-[#F7F5FF] rounded-2xl border border-purple-200 text-xs font-medium">
+                        <option>Stable Diffusion XL Turbo (Lightning Speed)</option>
+                        <option>Stable Diffusion 3 Medium (Ultra Detail)</option>
+                        <option>Flux.1 Dev (Photorealism Focus)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="font-bold text-xs text-[#1F1B2E] block mb-1">Color Theme</label>
+                      <div className="flex items-center gap-3">
+                        <button className="px-4 py-2 rounded-xl brand-gradient-bg text-white text-xs font-bold">
+                          Light Glassmorphism (Default)
+                        </button>
+                        <button className="px-4 py-2 rounded-xl bg-purple-50 text-purple-700 text-xs font-medium border border-purple-200">
+                          Dark Mode (Coming Soon)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </main>
+
+          {/* ==========================================
+              FLOATING DARK CIRCULAR HELP "?" BUTTON
+          =========================================== */}
+          <button
+            type="button"
+            onClick={() => setIsHelpOpen(true)}
+            className="fixed bottom-6 right-6 w-11 h-11 rounded-full bg-[#1F1B2E] text-white flex items-center justify-center font-bold text-base shadow-xl hover:scale-105 active:scale-95 transition-all z-50 cursor-pointer"
+            title="Help & Prompting Guide"
+          >
+            ?
+          </button>
+
+          {/* ==========================================
+              MODAL: HELP / PROMPT GUIDE
+          =========================================== */}
+          {isHelpOpen && (
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-6 max-w-lg w-full border border-purple-100 shadow-2xl space-y-4 animate-scale-up">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl brand-gradient-bg text-white flex items-center justify-center font-bold text-sm">
+                      ?
+                    </div>
+                    <h3 className="font-bold text-[#1F1B2E] text-base">VisionCrafter AI Guide</h3>
+                  </div>
+                  <button
+                    onClick={() => setIsHelpOpen(false)}
+                    className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                  >
+                    <Icon name="x" size={18} />
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs text-[#6B6B80] leading-relaxed">
+                  <div>
+                    <strong className="text-[#1F1B2E] block mb-0.5 font-bold">CFG Scale (Classifier-Free Guidance)</strong>
+                    <span>Controls how closely the image adheres to your text prompt. Values between 6 and 9 offer the optimal balance of creativity and fidelity.</span>
+                  </div>
+                  <div>
+                    <strong className="text-[#1F1B2E] block mb-0.5 font-bold">Sampling Steps</strong>
+                    <span>Determines the number of iterative denoising steps. 25-35 steps produce sharp details without slowing down generation.</span>
+                  </div>
+                  <div>
+                    <strong className="text-[#1F1B2E] block mb-0.5 font-bold">Negative Prompting</strong>
+                    <span>Instructs the neural network on what visual flaws, distortions, or unwanted elements to penalize during diffusion.</span>
+                  </div>
+                  <div>
+                    <strong className="text-[#1F1B2E] block mb-0.5 font-bold">Seed Reproducibility</strong>
+                    <span>Locking a specific numerical seed allows you to regenerate the identical composition while tuning other parameters like CFG.</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsHelpOpen(false)}
+                  className="w-full py-2.5 brand-gradient-bg text-white font-bold rounded-xl text-xs shadow-md"
+                >
+                  Got it, thanks!
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODAL: PRO PLAN UPGRADE
+          =========================================== */}
+          {isProOpen && (
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-purple-100 shadow-2xl space-y-4 animate-scale-up text-center">
+                <div className="w-12 h-12 rounded-2xl brand-gradient-bg text-white flex items-center justify-center mx-auto shadow-md">
+                  <Icon name="sparkles" size={24} />
+                </div>
+                <h3 className="text-xl font-bold text-[#1F1B2E]">VisionCrafter Pro</h3>
+                <p className="text-xs text-[#6B6B80]">Supercharge your diffusion workflow with enterprise-grade GPU instances.</p>
+
+                <div className="bg-[#F7F5FF] rounded-2xl p-4 text-left space-y-2 text-xs">
+                  <div className="flex items-center gap-2 text-[#1F1B2E]">
+                    <Icon name="check" size={14} className="text-purple-600 font-bold" />
+                    <span>Unlimited daily image generations</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#1F1B2E]">
+                    <Icon name="check" size={14} className="text-purple-600 font-bold" />
+                    <span>Dedicated H100 GPU priority inference</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#1F1B2E]">
+                    <Icon name="check" size={14} className="text-purple-600 font-bold" />
+                    <span>Lossless 4K neural upscaling & commercial license</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center gap-2">
+                  <button
+                    onClick={() => setIsProOpen(false)}
+                    className="flex-1 py-2.5 brand-gradient-bg text-white font-bold rounded-xl text-xs shadow-md"
+                  >
+                    Upgrade for $19/mo
+                  </button>
+                  <button
+                    onClick={() => setIsProOpen(false)}
+                    className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-xs"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODAL: LIGHTBOX FULLSCREEN PREVIEW
+          =========================================== */}
+          {lightboxImage && (
+            <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+              <div className="max-w-4xl w-full bg-[#1F1B2E] text-white rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
+                {/* Large Image Preview */}
+                <div className="flex-1 bg-black flex items-center justify-center p-4">
+                  <img
+                    src={lightboxImage.url}
+                    alt={lightboxImage.prompt}
+                    className="max-h-[70vh] w-auto object-contain rounded-xl"
+                  />
+                </div>
+
+                {/* Info Sidebar in Modal */}
+                <div className="w-full md:w-80 p-6 flex flex-col justify-between space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs uppercase font-bold text-purple-400">{lightboxImage.style} Style</span>
+                      <button
+                        onClick={() => setLightboxImage(null)}
+                        className="text-gray-400 hover:text-white p-1"
+                      >
+                        <Icon name="x" size={20} />
+                      </button>
+                    </div>
+
+                    <p className="text-xs font-semibold text-gray-200 mb-4 leading-relaxed">
+                      "{lightboxImage.prompt}"
+                    </p>
+
+                    <div className="space-y-2 text-[11px] text-gray-400 border-t border-white/10 pt-3">
+                      <div className="flex justify-between">
+                        <span>Seed:</span>
+                        <span className="text-white font-mono">{lightboxImage.seed}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>CFG Scale:</span>
+                        <span className="text-white">{lightboxImage.cfg}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Sampling Steps:</span>
+                        <span className="text-white">{lightboxImage.steps}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Aspect Ratio:</span>
+                        <span className="text-white">{lightboxImage.aspect}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-2">
+                    <button
+                      onClick={() => copyToClipboard(lightboxImage.prompt)}
+                      className="w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <Icon name="copy" size={14} />
+                      <span>Copy Prompt</span>
+                    </button>
+                    <button
+                      onClick={() => triggerDownload(lightboxImage)}
+                      className="w-full py-2.5 brand-gradient-bg text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md"
+                    >
+                      <Icon name="download" size={14} />
+                      <span>Download Artwork</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    // Render the React application
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
